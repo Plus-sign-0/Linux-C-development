@@ -1,0 +1,216 @@
+package AES;
+import java.util.Scanner;
+
+public class Key_expansion{
+
+    // 字节代换运算
+    public static String[][] ByteSub(String[][] matrix,int line){
+        for (int j=0;j<4;j++){
+            int x = Integer.parseInt(matrix[j][line].substring(0,1),16);
+            int y = Integer.parseInt(matrix[j][line].substring(1,2),16);
+            matrix[j][line]=Integer.toHexString(S[x][y]);
+            if(matrix[j][line].length()==1){
+                matrix[j][line]="0"+matrix[j][line];
+            }
+        }
+        return matrix;
+    }
+
+    //字循环
+    public static String[][] RotByte(String[][] matrix_b,int line)
+    {
+        String ans=matrix_b[0][line];
+        for (int i=0;i<3;i++){
+            matrix_b[i][line]=matrix_b[i+1][line];
+        }
+        matrix_b[3][line]=ans;
+        return matrix_b;
+    }
+
+    //Rcon数据表
+    private static final String[][] Rcon =new String[][]{
+            {"01","00","00","00"}, {"02","00","00","00"},{"04","00","00","00"}, {"08","00","00","00"},
+            {"10","00","00","00"},{"20","00","00","00"}, {"40","00","00","00"}, {"80","00","00","00"},
+            {"1b","00","00","00"}, {"36","00","00","00"}
+    };
+
+    //十六进制转为二进制
+    private static String HexstrtoBinarystr(String str){
+        String result="";
+        for(int i=0; i<str.length(); i++){
+            String temp="";
+            String hex= str.substring(i,i+1);
+            int byteValue = Integer.parseInt(hex, 16);
+            temp=Integer.toBinaryString(byteValue);
+            int length=temp.length();
+            if(length<4){
+                for(int j=0;j<4-length;j++){
+                    temp="0"+temp;
+                }
+            }
+            result+=temp;
+        }
+        return result;
+    }
+
+    //二进制转为十六进制
+    private static String BinarystrtoHexstr(String str){
+        String result="";
+        for(int i=0; i<str.length(); i+=4){
+            String hex= str.substring(i,i+4);
+            int byteValue = Integer.parseInt(hex, 2);
+            result += Integer.toHexString(byteValue);
+        }
+        return result;
+    }
+    //输出打印
+    public static void showMatrix(String[][] matrix){
+        for(int i=0;i<4;i++){
+            for(int j=0;j<4;j++){
+                System.out.print(matrix[i][j]+" ");
+            }
+            System.out.println('\n');
+        }
+    }
+
+    // S盒
+    private static final int[][] S = new int[][]{
+            {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
+            {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
+            {0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15},
+            {0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75},
+            {0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84},
+            {0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf},
+            {0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8},
+            {0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2},
+            {0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73},
+            {0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb},
+            {0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79},
+            {0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08},
+            {0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a},
+            {0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e},
+            {0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf},
+            {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
+    };
+
+    // 异或操作
+    public static String XOR(String a,String b){
+        StringBuilder builder = new StringBuilder();
+        for(int i=0;i<8;i++){
+            if((a.charAt(i) =='1' && b.charAt(i)=='1') || (a.charAt(i)=='0' &&b.charAt(i)=='0')){
+                builder.append("0");
+            }else {
+                builder.append("1");
+            }
+        }
+        return new String(builder);
+    }
+
+    //扩展密钥
+    public static String[][] key_expansion_1(String[][] matrix,int num)
+    {
+
+        String[][] expansion_matrix=new String[4][4];
+
+        //后三列处理
+        //第一列特殊处理
+        String[][] matrix_a=new String[4][4];
+        for(int i=0;i<4;i++)
+        {
+            for(int j=0;j<4;j++)
+            {
+                matrix_a[i][j]=matrix[i][j];
+            }
+        }
+
+        String[][] matrix_b=new String[4][4];
+        String[][] matrix_text=new String[4][4];
+        matrix_b=RotByte(matrix_a,3);
+        //System.out.println("字循环后：");
+        //showMatrix(matrix_b);
+        matrix_text=ByteSub(matrix_b, 3);
+        //System.out.println("字节代换后：");
+        //showMatrix(matrix_text);
+
+        String[] T_matrix=new String[4];
+        //System.out.println("第一列处理后：");
+        for(int j=0;j<4;j++)
+        {
+            T_matrix[j]=BinarystrtoHexstr(XOR(HexstrtoBinarystr(matrix_text[j][3]),HexstrtoBinarystr(Rcon[num][j])));
+            //System.out.print(T_matrix[j]+" ");
+        }
+        System.out.println();
+        for(int j=0;j<4;j++)
+        {
+            expansion_matrix[j][0]=BinarystrtoHexstr(XOR(HexstrtoBinarystr(T_matrix[j]),HexstrtoBinarystr(matrix[j][0])));
+        }
+
+        for(int i=1;i<4;i++)
+        {
+            for(int j=0;j<4;j++)
+            {
+                expansion_matrix[j][i]=BinarystrtoHexstr(XOR(HexstrtoBinarystr(expansion_matrix[j][i-1]),HexstrtoBinarystr(matrix[j][i])));
+            }
+        }
+
+        return expansion_matrix;
+    }
+
+    public static void key_expansion(String str){
+        String[][] arr=new String[4][4];
+        int i;
+        arr=Get(str);
+        showMatrix(arr);
+        /*for(i=0;i<4;i++){
+            for(j=0;j<4;j++){
+                expansion_matrix[i][line]=arr[i][j];
+                line++;
+            }
+        }*/
+
+        for(i=1;i<11;i++){
+            System.out.println("第"+i+"轮密钥扩展");
+            arr=key_expansion_1(arr,i-1);
+            showMatrix(arr);
+            /*for(j=0;j<4;j++){
+                for(k=0;k<4;k++){
+                    if(line<44){
+                        expansion_matrix[j][line]=arr[j][k];
+                        line++;
+                    }
+                }
+            }*/
+        }
+        //return expansion_matrix;
+    }
+
+    //得到状态矩阵
+
+    public static String [][] Get(String str){
+        String [][] matrix= new String [4][4];
+        int id=0;
+        for(int i=0;i<4;i++){
+            for(int j=0;j<4;j++){
+                matrix[j][i]=str.substring(id*2,id*2+2);
+               // matrix[i][j]=str.substring(id*2,id*2+2);
+                id++;
+            }
+        }
+        return matrix;
+    }
+
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        String arr_str=sc.nextLine();
+        System.out.println("输入密钥：3CA10B2157F01916902E1380ACC107BD");
+        System.out.println("2B7E151628AED2A6AbBF7158809CF4F3C");
+        System.out.println("2b7e151628aed2a6abf7158809cf4f3c");
+
+        key_expansion(arr_str);
+
+        sc.close();
+    }
+}
